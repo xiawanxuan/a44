@@ -62,8 +62,12 @@ struct SolverConfig {
     Scalar tolerance;
     Index maxIterations;
     bool verbose;
+    Index numThreads;
+    bool useParallel;
 
-    SolverConfig() : tolerance(1e-8), maxIterations(10000), verbose(false) {}
+    SolverConfig()
+        : tolerance(1e-8), maxIterations(10000), verbose(false),
+          numThreads(0), useParallel(true) {}
 };
 
 struct SimulationConfig {

@@ -28,6 +28,9 @@ struct CommandLineOptions {
     Index maxIterations;
     bool verbose;
 
+    Index numThreads;
+    bool useParallel;
+
     bool exportMatrix;
     bool generateMesh;
     bool showHelp;

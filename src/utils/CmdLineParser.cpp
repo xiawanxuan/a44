@@ -18,6 +18,8 @@ CommandLineOptions::CommandLineOptions()
       solverTolerance(1e-8),
       maxIterations(10000),
       verbose(false),
+      numThreads(0),
+      useParallel(true),
       exportMatrix(false),
       generateMesh(true),
       showHelp(false) {}
@@ -103,6 +105,20 @@ CommandLineOptions CmdLineParser::parse(int argc, char* argv[]) const {
     options.verbose = toBool(
         getOptionValue(optionMap, "verbose", ""), options.verbose);
 
+    options.numThreads = toIndex(
+        getOptionValue(optionMap, "threads",
+        getOptionValue(optionMap, "num-threads", "")), options.numThreads);
+
+    if (hasOption(optionMap, "no-parallel") || hasOption(optionMap, "serial")) {
+        options.useParallel = false;
+    } else if (hasOption(optionMap, "parallel")) {
+        options.useParallel = true;
+    } else {
+        options.useParallel = toBool(
+            getOptionValue(optionMap, "use-parallel", ""),
+            options.useParallel);
+    }
+
     return options;
 }
 
@@ -120,6 +136,8 @@ SimulationConfig CmdLineParser::toSimulationConfig(
     config.solver.tolerance = options.solverTolerance;
     config.solver.maxIterations = options.maxIterations;
     config.solver.verbose = options.verbose;
+    config.solver.numThreads = options.numThreads;
+    config.solver.useParallel = options.useParallel;
     return config;
 }
 
@@ -147,7 +165,12 @@ void CmdLineParser::printHelp() const {
     std::cout << "  -t <val>                厚度 (默认: 0.1)\n\n";
     std::cout << "求解器参数:\n";
     std::cout << "  --tol <val>             收敛容差 (默认: 1e-8)\n";
-    std::cout << "  --max-iter <N>          最大迭代次数 (默认: 10000)\n\n";
+    std::cout << "  --max-iter <N>          最大迭代次数 (默认: 10000)\n";
+    std::cout << "  --threads <N>           OpenMP 线程数 (默认: 自动 = CPU核心数)\n";
+    std::cout << "  --num-threads <N>       同 --threads\n";
+    std::cout << "  --no-parallel           禁用并行，强制串行求解\n";
+    std::cout << "  --serial                同 --no-parallel\n";
+    std::cout << "  --parallel              强制启用并行求解\n\n";
     std::cout << "示例:\n";
     std::cout << "  fem_solver --nx 20 --ny 20 -E 2.1e11 -v\n";
     std::cout << "  fem_solver -m mesh.txt -o results --export-matrix\n\n";
@@ -171,6 +194,14 @@ void CmdLineParser::printOptions(const CommandLineOptions& options) const {
     std::cout << "  厚度:        " << options.thickness << "\n";
     std::cout << "  求解容差:    " << options.solverTolerance << "\n";
     std::cout << "  最大迭代:    " << options.maxIterations << "\n";
+    std::cout << "  并行求解:    "
+              << (options.useParallel ? "是" : "否") << "\n";
+    if (options.useParallel) {
+        std::cout << "  线程数:      "
+                  << (options.numThreads > 0 ?
+                      std::to_string(options.numThreads) : "自动")
+                  << "\n";
+    }
     std::cout << "  输出目录:    " << options.outputDir << "\n";
     std::cout << "  导出矩阵:    "
               << (options.exportMatrix ? "是" : "否") << "\n\n";

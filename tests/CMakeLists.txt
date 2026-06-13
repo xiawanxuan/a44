@@ -7,6 +7,7 @@ set(TEST_SOURCES
     test_solver.cpp
     test_assembly.cpp
     test_io.cpp
+    test_parallel.cpp
 )
 
 add_executable(fem_tests ${TEST_SOURCES})

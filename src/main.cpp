@@ -121,9 +121,23 @@ int main(int argc, char* argv[]) {
     solverConfig.tolerance = options.solverTolerance;
     solverConfig.maxIterations = options.maxIterations;
     solverConfig.verbose = options.verbose;
+    solverConfig.numThreads = options.numThreads;
+    solverConfig.useParallel = options.useParallel;
 
     CGSolver solver(solverConfig);
     solver.setPreconditioner(PreconditionerType::Jacobi);
+
+    std::cout << "      并行模式: "
+              << (options.useParallel ? "启用" : "禁用") << std::endl;
+    if (options.useParallel) {
+        Index maxThreads = CGSolver::getMaxThreads();
+        std::cout << "      可用线程: " << maxThreads << " 核" << std::endl;
+        if (options.numThreads > 0) {
+            std::cout << "      使用线程: " << options.numThreads << " 核" << std::endl;
+        } else {
+            std::cout << "      使用线程: 自动 (" << maxThreads << " 核)" << std::endl;
+        }
+    }
 
     auto solveStart = std::chrono::high_resolution_clock::now();
     SimulationResult result = solver.solveWithStats(K_bc, F_bc);
@@ -135,6 +149,9 @@ int main(int argc, char* argv[]) {
     std::cout << "      收敛状态: "
               << (result.converged ? "收敛" : "未收敛") << std::endl;
     std::cout << "      求解耗时: " << result.solveTimeSeconds << " 秒" << std::endl;
+    if (options.useParallel) {
+        std::cout << "      实际线程: " << solver.getLastUsedThreads() << " 核" << std::endl;
+    }
 
     if (result.displacements.size() > 0) {
         Scalar maxDisp = result.displacements.cwiseAbs().maxCoeff();
