@@ -30,7 +30,8 @@ public:
 
 private:
     static constexpr uint32_t MAGIC_NUMBER = 0x46454D53;
-    static constexpr uint32_t VERSION = 1;
+    static constexpr uint32_t VERSION_LEGACY = 1;
+    static constexpr uint32_t VERSION = 2;
 };
 
 } // namespace io
